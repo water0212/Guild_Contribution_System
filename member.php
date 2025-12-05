@@ -12,17 +12,39 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公會成員列表</title>
+    <title>[首頁]公會成員列表</title>
     <!-- 引入 Bootstrap CSS 美化介面 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-
+    <div class="text-center py-4 bg-dark text-white mb-4 position-relative">
+        <div class="position-absolute start-0">
+        <button class="btn text-white rounded-pill px-4 py-4 me-2"
+            style="background-color:#7E57C2; border:none;"
+            onmouseover="this.style.backgroundColor='#6A45B5';"
+            onmouseout="this.style.backgroundColor='#7E57C2';">
+            ≡貢獻記錄
+        </button>
+        <button class="btn text-white rounded-pill px-4 py-4 me-2"
+            style="background-color:#7E57C2; border:none;"
+            onmouseover="this.style.backgroundColor='#6A45B5';"
+            onmouseout="this.style.backgroundColor='#7E57C2';">
+            ≡貢獻任務表
+        </button>
+        <button class="btn text-white rounded-pill px-4 py-4"
+            style="background-color:#7E57C2; border:none;"
+            onmouseover="this.style.backgroundColor='#6A45B5';"
+            onmouseout="this.style.backgroundColor='#7E57C2';">
+            👥 成員表
+        </button>
+    </div>
+        <h1>🏰 首頁</h1>
+        <p class="lead">歡迎來到資工公會！</p>
+    </div>
 <div class="container mt-5">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0">🛡️ 公會成員列表</h4>
-            <a href="index.php" class="btn btn-light btn-sm">回首頁</a>
         </div>
         <div class="card-body">
             <!-- 按鈕區 -->
