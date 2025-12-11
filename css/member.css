@@ -1,0 +1,139 @@
+body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        
+        /* 上方黑色導覽列 */
+        .header {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* 標題置中 */
+            position: relative;
+            text-align: center;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+
+        }
+
+        .header h1 {
+            width: 100%;
+            margin: 0;
+        }
+
+        .nav-btn {
+            background-color: #5e4b8b; /* 紫色按鈕 */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        h1 { margin: 0; font-size: 24px; }
+
+        /* 主要內容區塊 */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 操作按鈕區 (新增/修改/刪除) */
+        .action-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            border: 1px solid #ccc;
+            background: white;
+            padding: 8px 25px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .action-btn:hover { background-color: #f0f0f0; }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background-color: #4a3b3b; /* 深咖啡色表頭 */
+            color: white;
+            padding: 12px;
+            text-align: center; /* 圖片中看起來是置中 */
+            font-weight: normal;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+            color: #333;
+        }
+
+        /* 偶數行背景色 (斑馬紋) */
+        tr:nth-child(even) {
+            background-color: #e0e0e0; 
+        }
+        
+        /* 第一欄 (任務種類) 特別樣式 */
+        td:first-child {
+            font-weight: bold;
+            background-color: #e8e6e6; /* 稍微深一點的灰 */
+        }
+        
+        /* 標題置中 */
+        .table-title {
+            text-align: center;
+            font-size: 28px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 776px) {
+    td, th {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .nav-btn {
+        font-size: 12px;
+    }
+
+    .card-header h4 {
+        font-size: 16px;
+    }
+    .header h1{
+        font-size: 20px;
+        width: auto;
+        position: absolute;
+        right: 5%;
+    }
+    .header{
+        padding: 30px;
+    }
+}

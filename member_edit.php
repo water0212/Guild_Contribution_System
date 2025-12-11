@@ -1,0 +1,54 @@
+<?php
+require_once "db_conn.php";
+
+if (!isset($_GET['id'])) {
+    die("缺少會員 ID");
+}
+
+$id = intval($_GET['id']);
+
+$sql = "SELECT * FROM Member WHERE Member_Id = $id";
+$result = $conn->query($sql);
+
+if ($result->num_rows === 0) {
+    die("找不到指定的會員");
+}
+
+$row = $result->fetch_assoc();
+?>
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>編輯成員</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="card p-4 shadow">
+        <h3 class="mb-4">編輯會員資料</h3>
+
+        <form action="member_edit_action.php" method="post">
+            <input type="hidden" name="Member_Id" value="<?= $row['Member_Id'] ?>">
+
+            <div class="mb-3">
+                <label class="form-label">姓名</label>
+                <input type="text"  name="Name" class="form-control" value="<?= htmlspecialchars($row['Name']) ?>" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">貢獻度</label>
+                <input type="number" name="Contribution" class="form-control" value="<?= ($row['Contribution_sum'])?>" readonly>
+            </div>
+
+            <button type="submit" class="btn btn-primary">儲存變更</button>
+            <a href="member.php" class="btn btn-secondary">返回</a>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

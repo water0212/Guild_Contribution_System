@@ -1,5 +1,4 @@
 <?php
-// 1. 引入連線檔 (如果連線失敗，這行就會報錯)
 require_once 'db_conn.php';
 
 // 2. 執行 SQL 查詢
@@ -11,35 +10,21 @@ $result = $conn->query($sql);
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/member.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[首頁]公會成員列表</title>
-    <!-- 引入 Bootstrap CSS 美化介面 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <div class="text-center py-4 bg-dark text-white mb-4 position-relative">
-        <div class="position-absolute start-0">
-        <button class="btn text-white rounded-pill px-4 py-4 me-2"
-            style="background-color:#7E57C2; border:none;"
-            onmouseover="this.style.backgroundColor='#6A45B5';"
-            onmouseout="this.style.backgroundColor='#7E57C2';">
-            ≡貢獻記錄
-        </button>
-        <button class="btn text-white rounded-pill px-4 py-4 me-2"
-            style="background-color:#7E57C2; border:none;"
-            onmouseover="this.style.backgroundColor='#6A45B5';"
-            onmouseout="this.style.backgroundColor='#7E57C2';">
-            ≡貢獻任務表
-        </button>
-        <button class="btn text-white rounded-pill px-4 py-4"
-            style="background-color:#7E57C2; border:none;"
-            onmouseover="this.style.backgroundColor='#6A45B5';"
-            onmouseout="this.style.backgroundColor='#7E57C2';">
-            👥 成員表
-        </button>
-    </div>
+    <div class="header">
+        <div class="nav-buttons d-flex flex-wrap justify-content-center gap-2 mb-3">
+            <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
+            <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
+            <a href="member.php" class="nav-btn">👥 成員表</a>
+        </div>
         <h1>🏰 首頁</h1>
-        <p class="lead">歡迎來到資工公會！</p>
+    </div>
+        
     </div>
 <div class="container mt-5">
     <div class="card shadow-sm">
@@ -65,13 +50,11 @@ $result = $conn->query($sql);
                 <tbody>
                     <?php
                     if ($result->num_rows > 0) {
-                        // 3. 迴圈輸出每一列資料
                         while($row = $result->fetch_assoc()) {
                             echo "<tr>";
                             echo "<td>" . $row["Member_Id"] . "</td>";
                             echo "<td><strong>" . $row["Name"] . "</strong></td>";
                             
-                            // 根據貢獻度給予不同顏色 (小巧思)
                             $badgeColor = $row["Contribution_sum"] > 50 ? "text-success" : "text-muted";
                             echo "<td class='$badgeColor fw-bold'>" . $row["Contribution_sum"] . " pts</td>";
                             
