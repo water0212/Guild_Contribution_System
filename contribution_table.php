@@ -1,9 +1,43 @@
 <?php
-// 引入資料庫連線 (請確保此檔案存在且連線正常)
+// 引入資料庫連線
 require_once 'db_conn.php';
-// http://localhost/Guild_Contribution_System/contribution_table.php
-// SQL 查詢：撈取所有任務資料
-$sql = "SELECT * FROM contribution_table";
+
+// --- 1. 統計區塊 (保持不變) ---
+$stat_sql = "SELECT 
+                COUNT(*) as total_missions, 
+                SUM(point) as total_points, 
+                AVG(point) as avg_point 
+             FROM contribution_table";
+$stat_result = $conn->query($stat_sql);
+$stat_row = $stat_result->fetch_assoc();
+
+// --- 2. 搜尋邏輯 (大幅升級) ---
+
+// 初始化搜尋變數 (為了讓 HTML 表單可以記住剛剛輸入的值)
+$s_name = isset($_GET['search_name']) ? $_GET['search_name'] : "";
+$s_op   = isset($_GET['point_op']) ? $_GET['point_op'] : "=";
+$s_point= isset($_GET['search_point']) ? $_GET['search_point'] : "";
+
+// ★ 技巧：使用 WHERE 1=1，後面可以無限串接 AND
+$sql = "SELECT * FROM contribution_table WHERE 1=1";
+
+// 條件 A：如果有輸入名稱
+if (!empty($s_name)) {
+    // 使用 real_escape_string 防止簡單的 SQL Injection
+    $safe_name = $conn->real_escape_string($s_name);
+    $sql .= " AND Mission_type LIKE '%$safe_name%'";
+}
+
+// 條件 B：如果有輸入點數
+if ($s_point !== "") {
+    $safe_point = (int)$s_point; // 強制轉成數字，安全
+    // 檢查運算符號是否合法 (防止被惡意竄改)
+    if (in_array($s_op, ['=', '>', '<', '>=', '<='])) {
+        $sql .= " AND point $s_op $safe_point";
+    }
+}
+
+// 執行最終組裝好的 SQL
 $result = $conn->query($sql);
 ?>
 
@@ -12,6 +46,8 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <title>可完成的貢獻任務表</title>
+    <!-- 引入 SweetAlert2 (雖然暫時不用，但先留著) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* 簡單的 CSS 重現圖片風格 */
         body {
@@ -27,7 +63,7 @@ $result = $conn->query($sql);
             padding: 15px 20px;
             display: flex;
             align-items: center;
-            justify-content: center; /* 標題置中 */
+            justify-content: center;
             position: relative;
         }
 
@@ -39,49 +75,51 @@ $result = $conn->query($sql);
         }
 
         .nav-btn {
-            background-color: #5e4b8b; /* 紫色按鈕 */
+            background-color: #5e4b8b;
             color: white;
-            border: none;
             padding: 8px 15px;
+            text-decoration: none;
             border-radius: 20px;
+            font-size: 14px;
+            border: none;
             cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
         }
 
-        h1 { margin: 0; font-size: 24px; }
+        /* 統計區塊樣式 */
+        .stat-bar {
+            background: #fff3cd;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+        }
 
-        /* 主要內容區塊 */
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
+        /* 搜尋區塊樣式 */
+        .search-bar {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* 操作按鈕區 (新增/修改/刪除) */
-        .action-bar {
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
+        }
+        .search-bar input, .search-bar select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 5px;
         }
 
-        .action-btn {
-            border: 1px solid #ccc;
-            background: white;
-            padding: 8px 25px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            transition: 0.3s;
+        /* 表格容器 */
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            padding: 20px;
         }
-
-        .action-btn:hover { background-color: #f0f0f0; }
 
         /* 表格樣式 */
         table {
@@ -91,95 +129,119 @@ $result = $conn->query($sql);
         }
 
         th {
-            background-color: #4a3b3b; /* 深咖啡色表頭 */
+            background-color: #3d3d3d; /* 深色表頭 */
             color: white;
             padding: 12px;
-            text-align: center; /* 圖片中看起來是置中 */
-            font-weight: normal;
+            text-align: left;
         }
 
         td {
             padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
+            border-bottom: 1px solid #eee;
             color: #333;
         }
 
-        /* 偶數行背景色 (斑馬紋) */
         tr:nth-child(even) {
-            background-color: #e0e0e0; 
+            background-color: #f9f9f9; /* 斑馬紋 */
         }
+
+        /* 按鈕樣式 */
+        .btn-edit { color: #5e4b8b; text-decoration: none; font-weight: bold; margin-right: 10px; }
+        .btn-delete { color: #d9534f; text-decoration: none; font-weight: bold; }
         
-        /* 第一欄 (任務種類) 特別樣式 */
-        td:first-child {
-            font-weight: bold;
-            background-color: #e8e6e6; /* 稍微深一點的灰 */
-        }
-        
-        /* 標題置中 */
-        .table-title {
-            text-align: center;
-            font-size: 28px;
-            margin-top: 30px;
-            margin-bottom: 20px;
+        .action-bar { margin-bottom: 15px; }
+        .add-btn {
+            display: inline-block;
+            border: 1px solid #ccc;
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 頂部導覽列 -->
-    <div class="header">
-        <div class="nav-buttons">
-            <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
-            <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
-            <a href="member.php" class="nav-btn">👥 成員表</a>
-        </div>
-        <h1>公會名稱</h1>
+<!-- 導覽列 -->
+<div class="header">
+    <div class="nav-buttons">
+        <a href="#" class="nav-btn">≡ 貢獻紀錄</a>
+        <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
+        <a href="#" class="nav-btn">≡ 成員表</a>
+    </div>
+    <h2>公會名稱</h2>
+</div>
+
+<!-- 統計資訊 -->
+<div class="stat-bar">
+    📊 任務統計：目前共有 <b><?php echo $stat_row['total_missions']; ?></b> 個任務，
+    總貢獻點數 <b><?php echo $stat_row['total_points']; ?></b> 點，
+    平均每個任務 <b><?php echo number_format($stat_row['avg_point'], 1); ?></b> 點。
+</div>
+
+<!-- ★ 搜尋區塊 (新增點數搜尋) -->
+<div class="search-bar">
+    <form method="GET" action="">
+        <label>任務名稱：</label>
+        <input type="text" name="search_name" placeholder="輸入關鍵字..." value="<?php echo htmlspecialchars($s_name); ?>">
+        
+        <label style="margin-left: 15px;">點數：</label>
+        <select name="point_op">
+            <option value="=" <?php if($s_op == '=') echo 'selected'; ?>>等於 (=)</option>
+            <option value=">" <?php if($s_op == '>') echo 'selected'; ?>>大於 (>)</option>
+            <option value="<" <?php if($s_op == '<') echo 'selected'; ?>>小於 (<)</option>
+            <option value=">=" <?php if($s_op == '>=') echo 'selected'; ?>>大於等於 (>=)</option>
+            <option value="<=" <?php if($s_op == '<=') echo 'selected'; ?>>小於等於 (<=)</option>
+        </select>
+        <input type="number" name="search_point" placeholder="輸入點數" value="<?php echo htmlspecialchars($s_point); ?>" style="width: 80px;">
+        
+        <button type="submit" class="nav-btn">🔍 搜尋</button>
+        
+        <?php if(!empty($s_name) || $s_point !== ""): ?>
+            <a href="contribution_table.php" style="margin-left: 10px; color: #666; text-decoration: underline;">清除搜尋</a>
+        <?php endif; ?>
+    </form>
+</div>
+
+<div class="container">
+    <h3 style="text-align: center;">可完成的貢獻任務表</h3>
+    
+    <div class="action-bar">
+        <a href="contribution_table_add.php" class="add-btn">＋ 新增</a>
     </div>
 
-    <div class="container">
-        <!-- 功能按鈕 -->
-        <div class="action-bar">
-            <!-- 依照 PDF 檔案結構連結到對應的 PHP -->
-            <a href="contribution_table_add.php" class="action-btn">＋ 新增</a>
-            <!-- <a href="contribution_table_edit.php" class="action-btn">✎ 修改</a>
-            <a href="contribution_table_delete.php" class="action-btn">🗑 刪除</a> -->
-        </div>
-
-        <!-- 表格內容 -->
-        <table>
-            <thead>
-                <tr>
-                    <th width="20%">任務種類</th>
-                    <th width="40%">任務敘述</th>
-                    <th width="20%">點數</th>
-                    <th width="20%">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                if ($result->num_rows > 0) {
-                    // 輸出每一行資料
-                    while($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row["Mission_type"]) . "</td>";
-                        echo "<td>" . htmlspecialchars($row["Text"]) . "</td>";
-                        echo "<td>" . htmlspecialchars(string: $row["point"]) . "</td>";
-                        echo "<td>" . "<a href='contribution_table_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
-                    // 刪除前加入確認視窗
+    <table>
+        <thead>
+            <tr>
+                <th>任務種類 (Mission_type)</th>
+                <th>任務敘述 (Text)</th>
+                <th>點數 (point)</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if ($result && $result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>" . $row["Mission_type"] . "</td>";
+                    echo "<td>" . $row["Text"] . "</td>";
+                    echo "<td>" . $row["point"] . "</td>";
+                    echo "<td>";
+                    echo "<a href='contribution_table_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
+                    // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
                     echo "<a href='contribution_table_delete.php?id=" . $row["Mission_type"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
                     echo "</td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='3'>目前沒有任務資料</td></tr>";
+                    echo "</tr>";
                 }
-                ?>
-            </tbody>
-        </table>
-
-        <h2 class="table-title">可完成的貢獻任務表</h2>
-    </div>
+            } else {
+                echo "<tr><td colspan='4' style='text-align:center; color: #888;'>查無資料</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
 </body>
 </html>
