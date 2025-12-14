@@ -1,7 +1,7 @@
 <?php
 // 引入資料庫連線 (請確保此檔案存在且連線正常)
-require_once 'db_conn.php';
-// http://localhost/Guild_Contribution_System/contribution_table.php
+require_once '../db_conn.php';
+// http://localhost/Guild_Contribution_System/contribution_record.php
 // SQL 查詢：撈取所有任務資料
 $sql = "SELECT * FROM contribution_table";
 $result = $conn->query($sql);
@@ -130,7 +130,7 @@ $result = $conn->query($sql);
     <!-- 頂部導覽列 -->
     <div class="header">
         <div class="nav-buttons">
-            <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
+            <a href="contribution_record.php" class="nav-btn">≡ 貢獻紀錄</a>
             <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
             <a href="member.php" class="nav-btn">👥 成員表</a>
         </div>

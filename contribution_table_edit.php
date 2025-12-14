@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="number" name="point" value="<?php echo $row['point']; ?>">
         
         <button type="submit" style="background:#5e4b8b; color:white; border:none; padding:10px; border-radius:5px;">儲存修改</button>
-        <a href="contribution_table.php" style="margin-left:10px;">取消</a>
+        <a href="view/contribution_table.php" style="margin-left:10px;">取消</a>
     </form>
 </div>
 </body>

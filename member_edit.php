@@ -45,7 +45,7 @@ $row = $result->fetch_assoc();
             </div>
 
             <button type="submit" class="btn btn-primary">儲存變更</button>
-            <a href="member.php" class="btn btn-secondary">返回</a>
+            <a href="view/member.php" class="btn btn-secondary">返回</a>
         </form>
     </div>
 </div>

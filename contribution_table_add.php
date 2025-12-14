@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="number" name="point" required>
         
         <button type="submit">確認新增</button>
-        <a href="contribution_table.php" style="margin-left:10px;">取消</a>
+        <a href="view/contribution_table.php" style="margin-left:10px;">取消</a>
     </form>
 </div>
 

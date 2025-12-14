@@ -1,8 +1,8 @@
 <?php
-require_once 'db_conn.php';
+require_once '../db_conn.php';
 
 // 2. 執行 SQL 查詢
-$sql = "SELECT * FROM Member";
+$sql = "SELECT * FROM member";
 $result = $conn->query($sql);
 ?>
 
@@ -10,7 +10,7 @@ $result = $conn->query($sql);
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="css/member.css">
+    <link rel="stylesheet" href="../css/member.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[首頁]公會成員列表</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@ $result = $conn->query($sql);
 <body class="bg-light">
     <div class="header">
         <div class="nav-buttons d-flex flex-wrap justify-content-center gap-2 mb-3">
-            <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
+            <a href="contribution_record.php" class="nav-btn">≡ 貢獻紀錄</a>
             <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
             <a href="member.php" class="nav-btn">👥 成員表</a>
         </div>
