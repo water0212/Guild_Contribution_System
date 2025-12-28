@@ -166,7 +166,7 @@ $result = $conn->query($sql);
 <!-- 導覽列 -->
 <div class="header">
     <div class="nav-buttons">
-        <a href="#" class="nav-btn">≡ 貢獻紀錄</a>
+        <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
         <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
         <a href="member.php" class="nav-btn">👥 成員表</a>
     </div>
