@@ -53,6 +53,38 @@ $result = $conn->query($sql);
         .card { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; }
         .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; height: 100%; }
         .chart-container { position: relative; height: 250px; width: 100%; display: flex; justify-content: center; }
+        .custom-nav-btn {
+            background-color: #495057; /* 灰色底 */
+            color: #fff;
+            border: 1px solid #6c757d;
+            padding: 8px 20px;
+            border-radius: 50px; /* 橢圓形關鍵 */
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            align-items: center;
+            gap: 5px;
+        }
+        .custom-nav-btn:hover {
+            background-color: #6c757d; /* 滑鼠移過去變亮一點 */
+            color: white;
+            transform: translateY(-2px); /* 微微浮起特效 */
+        }
+        /* 登出按鈕特別改成紅色 */
+        .btn-logout {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-logout:hover {
+            background-color: #bb2d3b;
+        }
+        .btn-login {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .btn-login:hover {
+            background-color: #157347;
+        }
     </style>
 </head>
 <body>
@@ -61,7 +93,12 @@ $result = $conn->query($sql);
     <div class="mb-3">
         <a href="member.php" class="nav-btn">👥 成員列表</a>
         <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
-        <a href="logout.php" class="nav-btn bg-danger border-danger">登出</a>
+            <?php if($_SESSION["username"]<>'guest'){
+            echo "<a href='logout.php' class='custom-nav-btn btn-logout'>🚪 登出</a>";
+        }
+        else{
+            echo "<a href='go_to_log_in.php' class='custom-nav-btn btn-login'>🚪 登入</a>";
+        } ?>
     </div>
     <h2>📜 公會任務佈告欄</h2>
 </div>
@@ -97,7 +134,11 @@ $result = $conn->query($sql);
     <div class="card p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">📋 任務列表</h4>
-            <a href="contribution_table_add.php" class="btn btn-primary">+ 新增任務</a>
+            <?php
+            if($_SESSION["username"]<>'guest'){
+            echo"<a href='contribution_table_add.php' class='btn btn-primary'>+ 新增任務</a>";
+            }
+            ?>
         </div>
         
         <table id="missionTable" class="table table-hover table-striped" style="width:100%">
@@ -124,10 +165,16 @@ $result = $conn->query($sql);
                         
                         echo "<td><span class='badge $badge'>" . $row["Mission_type"] . "</span></td>";
                         echo "<td class='fw-bold text-success'>" . $row["point"] . " pts</td>";
-                        echo "<td>
+                        if($_SESSION["username"]<>'guest'){
+                              echo "<td>
                                 <a href='contribution_table_edit.php?id=" . $row["Mission_type"] . "' class='btn btn-sm btn-outline-primary'>編輯</a>
                                 <a href='contribution_table_delete.php?id=" . $row["Mission_type"] . "' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"確定刪除嗎？\");'>刪除</a>
                               </td>";
+                        }
+                        else{
+                            echo "<td> </td>";
+                        }
+                       
                         echo "</tr>";
                     }
                 }

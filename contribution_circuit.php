@@ -81,6 +81,14 @@ $result = $conn->query($sql);
         .btn-logout:hover {
             background-color: #bb2d3b;
         }
+        /* 登入按鈕 (綠色) */
+        .btn-login {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .btn-login:hover {
+            background-color: #157347;
+        }
 
         /* 標題獨立置中 */
         .page-title {
@@ -104,7 +112,13 @@ $result = $conn->query($sql);
 <div class="header-bar">
     <a href="member.php" class="custom-nav-btn">👥 成員列表</a>
     <a href="contribution_table.php" class="custom-nav-btn">📜 任務表</a>
-    <a href="logout.php" class="custom-nav-btn btn-logout">🚪 登出</a>
+    <?php if($_SESSION["username"]<>'guest'){
+            echo "<a href='logout.php' class='custom-nav-btn btn-logout'>🚪 登出</a>";
+        }
+        else{
+            echo "<a href='go_to_log_in.php' class='custom-nav-btn btn-login'>🚪 登入</a>";
+        } ?>
+
 </div>
 
 <!-- 2. 標題區塊 (獨立移到下面置中) -->
@@ -128,7 +142,9 @@ $result = $conn->query($sql);
 
     <div class="d-flex justify-content-between mb-3">
         <h4>紀錄明細</h4>
-        <a href="contribution_circuit_add.php" class="btn btn-success">+ 新增紀錄</a>
+        <?php if($_SESSION["username"]<>'guest'){ 
+            echo "<a href='contribution_circuit_add.php' class='btn btn-success'>+ 新增紀錄</a>";
+        } ?>
     </div>
 
     <table class="table table-hover align-middle">
@@ -152,10 +168,15 @@ $result = $conn->query($sql);
                     echo "<td class='fw-bold text-success'>+" . $row["point"] . "</td>";
                     
                     // 修改這裡：按鈕改成呼叫 JS 函數
-                    echo "<td>
+                    if($_SESSION["username"]<>'guest'){
+                        echo "<td>
                             <a href='contribution_circuit_edit.php?id=" . $row["record_id"] . "' class='btn btn-sm btn-warning'>編輯</a>
                             <button onclick='confirmDelete(" . $row["record_id"] . ")' class='btn btn-sm btn-danger'>刪除</button>
                           </td>";
+                    }
+                    else{
+                        echo "<td></td>";
+                    }
                     echo "</tr>";
                 }
             } else {

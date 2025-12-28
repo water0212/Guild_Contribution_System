@@ -115,6 +115,13 @@ $result = $conn->query($sql);
         .btn-logout:hover {
             background-color: #bb2d3b;
         }
+        .btn-login {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .btn-login:hover {
+            background-color: #157347;
+        }
 
         /* 下方大標題樣式 */
         .page-title {
@@ -142,8 +149,13 @@ $result = $conn->query($sql);
         <!-- 上排：導覽按鈕 -->
         <div class="nav-pills-group">
             <a href="contribution_circuit.php" class="custom-nav-btn">≡ 貢獻紀錄</a>
-            <a href="contribution_table.php" class="custom-nav-btn">≡ 貢獻任務表</a>
-            <a href="logout.php" class="custom-nav-btn btn-logout">🚪 登出</a>
+            <a href="contribution_table.php" class="custom-nav-btn">📜 任務表</a>
+                <?php if($_SESSION["username"]<>'guest'){
+            echo "<a href='logout.php' class='custom-nav-btn btn-logout'>🚪 登出</a>";
+        }
+        else{
+            echo "<a href='go_to_log_in.php' class='custom-nav-btn btn-login'>🚪 登入</a>";
+        } ?>
         </div>
 
         <!-- 下排：大標題 -->
