@@ -34,9 +34,9 @@ $row = $result->fetch_assoc();
 
 <div class="container mt-5">
     <div class="card p-4 shadow">
-        <h3 class="mb-4">編輯會員資料</h3>
+        <h3 class="mb-4">成為公會長(們)</h3>
 
-        <form action="member_edit_action.php" method="post">
+        <form action="member_promote_action.php" method="post">
             <input type="hidden" name="Member_Id" value="<?= $row['Member_Id'] ?>">
 
             <div class="mb-3">
@@ -45,8 +45,8 @@ $row = $result->fetch_assoc();
             </div>
 
             <div class="mb-3">
-                <label class="form-label">貢獻度</label>
-                <input type="number" name="Contribution" class="form-control" value="<?= ($row['Contribution_sum'])?>" readonly>
+                <label class="form-label">新增密碼</label>
+                <input type="text" name="Pass" class="form-control" value="" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,20}" required>
             </div>
 
             <button type="submit" class="btn btn-primary">儲存變更</button>

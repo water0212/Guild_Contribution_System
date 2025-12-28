@@ -144,7 +144,12 @@ $result = $conn->query($sql);
                         if ($result && $result->num_rows > 0) {
                             while($row = $result->fetch_assoc()) {
                                 echo "<tr>";
-                                echo "<td>" . $row["Member_Id"] . "</td>";
+                                if($row["password"] <> NULL){
+                                    echo "<td>🔐 " . $row["Member_Id"] . "</td>";
+                                }
+                                else{
+                                    echo "<td>👤 " . $row["Member_Id"] . "</td>";
+                                }
                                 echo "<td><strong>" . $row["Name"] . "</strong></td>";
                                 
                                 $score = $row["total_score"]; 
@@ -158,11 +163,22 @@ $result = $conn->query($sql);
                                 } else {
                                     echo "<td><span class='badge bg-secondary'>💤 非活躍狀態</span></td>";
                                 }
-                                
-                                echo "<td>
+                                if($_SESSION['username'] <> "guest"){
+                                    if($row["Name"] == $_SESSION['username']||$row["password"] <> NULL){
+                                        echo "<td>
                                         <a href='member_edit.php?id=" . $row["Member_Id"] . "' class='btn btn-warning btn-sm'>編輯</a>
                                         <button onclick='confirmDelete(" . $row["Member_Id"] . ")' class='btn btn-danger btn-sm'>刪除</button>
                                       </td>";
+                                    }
+                                    else{
+                                        echo "<td>
+                                        <a href='member_edit.php?id=" . $row["Member_Id"] . "' class='btn btn-warning btn-sm'>編輯</a>
+                                        <button onclick='confirmDelete(" . $row["Member_Id"] . ")' class='btn btn-danger btn-sm'>刪除</button>
+                                        <button onclick='confirmPromote(" . $row["Member_Id"] . ")' class='btn btn-info btn-sm'>提拔</button>
+                                      </td>";
+                                    }
+                                     
+                                }
                                 echo "</tr>";
                             }
                         } else {
@@ -223,6 +239,21 @@ $result = $conn->query($sql);
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = 'member_delete.php?id=' + id;
+                }
+            })
+        }
+        function confirmPromote(id) {
+            Swal.fire({
+                title: '確定要提拔此人嗎？',
+                text: "提拔後將提升其權限！",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: '是的，提拔！',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'member_promote.php?id=' + id;
                 }
             })
         }

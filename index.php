@@ -12,8 +12,8 @@
     <form method = "post" action = "result.php">
         <h1>Login</h1>
         <p>
-            <label for="Acc">帳號:
-                <input name="Acc" type = "text" placeholder = "Key account" 
+            <label for="Acc">名字:
+                <input name="Acc" type = "text" placeholder = "Key name" 
                   require /> 
             </label>
         </p>
