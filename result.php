@@ -42,7 +42,7 @@ if ($fail_count >= $max_fail) {
         $stmt->execute([$Acc, $Pass]);
         $result = $stmt->get_result();
         //以上寫法是為了防止「sql injection」
-        if($result){
+        if($result->num_rows === 1){
             $row = $result->fetch_assoc();
             $_SESSION['username'] = $row['Name'];
             $_SESSION['logged_in'] = true;
