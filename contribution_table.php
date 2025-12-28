@@ -215,7 +215,11 @@ $result = $conn->query($sql);
     <h3 style="text-align: center;">可完成的貢獻任務表</h3>
     
     <div class="action-bar">
-        <a href="contribution_table_add.php" class="add-btn">＋ 新增</a>
+            <?php
+        if ($_SESSION['username'] <> "guest"){
+           echo '<a href="contribution_table_add.php" class="add-btn">＋ 新增</a>';
+        } 
+        ?>
     </div>
 
     <table>
@@ -236,9 +240,11 @@ $result = $conn->query($sql);
                     echo "<td>" . $row["Text"] . "</td>";
                     echo "<td>" . $row["point"] . "</td>";
                     echo "<td>";
-                    echo "<a href='contribution_table_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
-                    // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
-                    echo "<a href='contribution_table_delete.php?id=" . $row["Mission_type"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
+                    if($_SESSION['username'] <> "guest"){
+                        echo "<a href='contribution_table_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
+                        // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
+                        echo "<a href='contribution_table_delete.php?id=" . $row["Mission_type"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
+                    }
                     echo "</td>";
                     echo "</tr>";
                 }

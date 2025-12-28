@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit();
+}
 require_once 'db_conn.php';
 
 // 1. 取得要修改的任務 ID (Primary Key)

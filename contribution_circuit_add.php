@@ -1,6 +1,10 @@
 <?php
 require_once 'db_conn.php';
-
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit();
+}
 $message = "";
 
 // --- 1. 撈取下拉選單需要的資料 (成員 & 任務) ---

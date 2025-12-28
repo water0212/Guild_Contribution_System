@@ -161,7 +161,7 @@ $result = $conn->query($sql);
     <div class="nav-buttons">
         <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
         <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
-        <a href="member.php" class="nav-btn">≡ 成員表</a>
+        <a href="member.php" class="nav-btn">👥 成員表</a>
     </div>
     <h2>公會名稱</h2>
     <div class="nav-buttons" style="right: 20px; left: auto;">
@@ -190,7 +190,11 @@ $result = $conn->query($sql);
     <h3 style="text-align: center;">貢獻任務紀錄表</h3>
     
     <div class="action-bar">
-        <a href="contribution_circuit_add.php" class="add-btn">＋ 新增</a>
+        <?php
+        if ($_SESSION['username'] <> "guest"){
+           echo '<a href="contribution_circuit_add.php" class="add-btn">＋ 新增</a>';
+        } 
+        ?>
     </div>
 
     <table>
@@ -213,9 +217,11 @@ $result = $conn->query($sql);
                     echo "<td>" . $row["Name"] . "</td>";
                     echo "<td>" . $row["point"] . "</td>";
                     echo "<td>";
-                    echo "<a href='contribution_circuit_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
-                    // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
-                    echo "<a href='contribution_circuit_delete.php?id=" . $row["record_id"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
+                    if($_SESSION['username'] <> "guest"){
+                        echo "<a href='contribution_circuit_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
+                        // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
+                        echo "<a href='contribution_circuit_delete.php?id=" . $row["record_id"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
+                    }
                     echo "</td>";
                     echo "</tr>";
                 }

@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit();
+}
 require_once 'db_conn.php';
 
 $message = ""; // 用來顯示錯誤或成功訊息

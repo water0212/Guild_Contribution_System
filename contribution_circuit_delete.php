@@ -1,6 +1,10 @@
 <?php
 require_once 'db_conn.php';
-
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit();
+}
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
 

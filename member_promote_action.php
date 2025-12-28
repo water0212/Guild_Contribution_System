@@ -8,10 +8,10 @@ require_once "db_conn.php";
 
 $id = intval($_POST['Member_Id']);
 $name = $_POST['Name'];
-$points = intval($_POST['Contribution']);
-
+$points = $_POST['Pass'];
+$points = hash('sha256',$points);
 $sql = "UPDATE member
-        SET Name = '$name', Contribution_sum = $points
+        SET Name = '$name', password = '$points'
         WHERE Member_Id = $id";
 
 if ($conn->query($sql) === TRUE) {
