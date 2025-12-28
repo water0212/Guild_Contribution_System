@@ -1,40 +1,28 @@
 <?php
 // 引入資料庫連線
 require_once 'db_conn.php';
-
-// --- 1. 統計區塊 (保持不變) ---
-// $stat_sql = "SELECT 
-//                 COUNT(*) as total_missions, 
-//                 SUM(point) as total_points, 
-//                 AVG(point) as avg_point 
-//              FROM contribution_table";
-// $stat_result = $conn->query($stat_sql);
-// $stat_row = $stat_result->fetch_assoc();
-
 // --- 2. 搜尋邏輯 (大幅升級) ---
 
 // 初始化搜尋變數 (為了讓 HTML 表單可以記住剛剛輸入的值)
-$s_name = isset($_GET['search_name']) ? $_GET['search_name'] : "";
-$s_op   = isset($_GET['point_op']) ? $_GET['point_op'] : "=";
-$s_point= isset($_GET['search_point']) ? $_GET['search_point'] : "";
+$s_mission = isset($_GET['search_mission']) ? $_GET['search_mission'] : "";
+$s_member = isset($_GET['search_member']) ? $_GET['search_member'] : "";
+
+
 
 // ★ 技巧：使用 WHERE 1=1，後面可以無限串接 AND
 $sql = "SELECT * FROM contribution_record inner join member ON contribution_record.Member_Id = member.Member_Id WHERE 1=1";
 
-// 條件 A：如果有輸入名稱
-if (!empty($s_name)) {
+// 條件 A：如果有輸入任務名稱
+if (!empty($s_mission)) {
     // 使用 real_escape_string 防止簡單的 SQL Injection
-    $safe_name = $conn->real_escape_string($s_name);
-    $sql .= " AND Mission_type LIKE '%$safe_name%'";
+    $safe_mission = $conn->real_escape_string($s_mission);
+    $sql .= " AND Mission_type LIKE '%$safe_mission%'";
 }
 
-// 條件 B：如果有輸入點數
-if ($s_point !== "") {
-    $safe_point = (int)$s_point; // 強制轉成數字，安全
-    // 檢查運算符號是否合法 (防止被惡意竄改)
-    if (in_array($s_op, ['=', '>', '<', '>=', '<='])) {
-        $sql .= " AND point $s_op $safe_point";
-    }
+// 條件 B：如果有輸入成員名稱
+if (!empty($s_member)) {
+    $safe_member = $conn->real_escape_string($s_member);
+    $sql .= " AND Name LIKE '%$safe_member%'";
 }
 
 // 執行最終組裝好的 SQL
@@ -173,32 +161,18 @@ $result = $conn->query($sql);
     <h2>公會名稱</h2>
 </div>
 
-<!-- 統計資訊 -->
-<!-- <div class="stat-bar">
-    📊 任務統計：目前共有 <b><?php echo $stat_row['total_missions']; ?></b> 個任務，
-    總貢獻點數 <b><?php echo $stat_row['total_points']; ?></b> 點，
-    平均每個任務 <b><?php echo number_format($stat_row['avg_point'], 1); ?></b> 點。
-</div> -->
-
 <!-- ★ 搜尋區塊 (新增點數搜尋) -->
 <div class="search-bar">
     <form method="GET" action="">
         <label>任務名稱：</label>
-        <input type="text" name="search_name" placeholder="輸入關鍵字..." value="<?php echo htmlspecialchars($s_name); ?>">
+        <input type="text" name="search_mission" placeholder="輸入關鍵字..." value="<?php echo htmlspecialchars($s_mission); ?>">
         
-        <label style="margin-left: 15px;">點數：</label>
-        <select name="point_op">
-            <option value="=" <?php if($s_op == '=') echo 'selected'; ?>>等於 (=)</option>
-            <option value=">" <?php if($s_op == '>') echo 'selected'; ?>>大於 (>)</option>
-            <option value="<" <?php if($s_op == '<') echo 'selected'; ?>>小於 (<)</option>
-            <option value=">=" <?php if($s_op == '>=') echo 'selected'; ?>>大於等於 (>=)</option>
-            <option value="<=" <?php if($s_op == '<=') echo 'selected'; ?>>小於等於 (<=)</option>
-        </select>
-        <input type="number" name="search_point" placeholder="輸入點數" value="<?php echo htmlspecialchars($s_point); ?>" style="width: 80px;">
+        <label style="margin-left: 15px;">成員：</label>
+        <input type="text" name="search_member" placeholder="輸入成員名稱" value="<?php echo htmlspecialchars($s_member); ?>" style="width: 150px;">
         
         <button type="submit" class="nav-btn">🔍 搜尋</button>
         
-        <?php if(!empty($s_name) || $s_point !== ""): ?>
+        <?php if(!empty($s_mission) || !empty($s_member)): ?>
             <a href="contribution_circuit.php" style="margin-left: 10px; color: #666; text-decoration: underline;">清除搜尋</a>
         <?php endif; ?>
     </form>
