@@ -1,7 +1,11 @@
 <?php
 // 引入資料庫連線
 require_once 'db_conn.php';
-
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit();
+}
 // --- 1. 統計區塊 (保持不變) ---
 $stat_sql = "SELECT 
                 COUNT(*) as total_missions, 
@@ -171,6 +175,9 @@ $result = $conn->query($sql);
         <a href="member.php" class="nav-btn">👥 成員表</a>
     </div>
     <h2>公會名稱</h2>
+    <div class="nav-buttons" style="right: 20px; left: auto;">
+        <a href="logout.php" class="nav-btn">🚪 登出</a>
+    </div>
 </div>
 
 <!-- 統計資訊 -->
