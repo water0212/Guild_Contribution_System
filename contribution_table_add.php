@@ -55,7 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php endif; ?>
 
     <form method="post" action="">
-        <label>任務名稱 (主鍵):</label>
+        <label>任務名稱:</label>
         <!-- ★ 變更：name 屬性改成 Mission_type -->
         <input type="text" name="Mission_type" required>
         
