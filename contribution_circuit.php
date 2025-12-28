@@ -229,7 +229,7 @@ $result = $conn->query($sql);
                     echo "<td>" . $row["Member_Id"] . "</td>";
                     echo "<td>" . $row["point"] . "</td>";
                     echo "<td>";
-                    echo "<a href='contribution_table_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
+                    echo "<a href='contribution_circuit_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
                     // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
                     echo "<a href='contribution_table_delete.php?id=" . $row["Mission_type"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
                     echo "</td>";
