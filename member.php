@@ -1,6 +1,13 @@
 <?php
 require_once 'db_conn.php';
 
+// 搜尋與列表顯示邏輯 (維持不變)
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: index.php");
+    exit();
+}
+
 // --- [SQL 功能 3] Procedure: 處理 "活躍度更新" 按鈕 ---
 if (isset($_POST['btn_engagement'])) {
     // 1. 初始化變數
@@ -27,7 +34,7 @@ if (isset($_POST['btn_reset'])) {
     exit;
 }
 
-// 搜尋與列表顯示邏輯 (維持不變)
+
 $s_name = isset($_GET['search_name']) ? $_GET['search_name'] : "";
 $s_op   = isset($_GET['point_op']) ? $_GET['point_op'] : "=";
 $s_point= isset($_GET['search_point']) ? $_GET['search_point'] : "";
@@ -82,6 +89,9 @@ $result = $conn->query($sql);
             <a href="member.php" class="nav-btn">👥 成員表</a>
         </div>
         <h2>🏰 首頁</h2>
+        <div style="position: absolute; right: 20px; top: 20px;">
+            <button onclick="location.href='logout.php'" class="nav-btn">🚪 登出</button>
+        </div>
     </div>
 
     <!-- 搜尋區塊 -->
