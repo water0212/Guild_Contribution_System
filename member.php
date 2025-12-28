@@ -67,30 +67,88 @@ $result = $conn->query($sql);
     
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f5f5f5; }
-        .header { background-color: #1a1a1a; color: white; padding: 15px; text-align: center; position: relative; display: flex; justify-content: center; align-items: center;}
-        .nav-buttons { position: absolute; left: 20px; display: flex; gap: 10px; }
-        .nav-btn { background-color: #5e4b8b; color: white; border: none; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 14px; cursor: pointer;}
         .search-bar { background: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .container { max-width: 900px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* --- 修改後的 Header 樣式 (仿照圖片風格) --- */
+        .header-container {
+            background-color: #212529; /* 深色背景 */
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        /* 上方按鈕區塊 */
+        .nav-pills-group {
+            display: inline-flex;
+            gap: 15px; /* 按鈕之間的距離 */
+            margin-bottom: 20px; /* 按鈕跟標題的距離 */
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 橢圓形按鈕樣式 */
+        .custom-nav-btn {
+            background-color: #495057; /* 灰色底 */
+            color: #fff;
+            border: 1px solid #6c757d;
+            padding: 8px 20px;
+            border-radius: 50px; /* 橢圓形關鍵 */
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .custom-nav-btn:hover {
+            background-color: #6c757d; /* 滑鼠移過去變亮一點 */
+            color: white;
+            transform: translateY(-2px); /* 微微浮起特效 */
+        }
+
+        /* 登出按鈕特別改成紅色 */
+        .btn-logout {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-logout:hover {
+            background-color: #bb2d3b;
+        }
+
+        /* 下方大標題樣式 */
+        .page-title {
+            color: #f8f9fa;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
         table { width: 100%; margin-top: 10px; }
         th { background-color: #4a3b3b; color: white; padding: 12px; text-align: center; }
         td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
         tr:nth-child(even) { background-color: #e0e0e0; }
-        @media (max-width: 776px) { .header { flex-direction: column; gap: 10px; } .nav-buttons { position: static; } }
+        @media (max-width: 776px) { .header { flex-direction: column; gap: 10px; } }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[首頁]公會成員列表</title>
 </head>
 <body>
-    <div class="header">
-        <div class="nav-buttons">
-            <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
-            <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
-            <a href="member.php" class="nav-btn">👥 成員表</a>
+    <div class="header-container">
+        <!-- 上排：導覽按鈕 -->
+        <div class="nav-pills-group">
+            <a href="contribution_circuit.php" class="custom-nav-btn">≡ 貢獻紀錄</a>
+            <a href="contribution_table.php" class="custom-nav-btn">≡ 貢獻任務表</a>
+            <a href="logout.php" class="custom-nav-btn btn-logout">🚪 登出</a>
         </div>
-        <h2>🏰 首頁</h2>
-        <div style="position: absolute; right: 20px; top: 20px;">
-            <button onclick="location.href='logout.php'" class="nav-btn">🚪 登出</button>
+
+        <!-- 下排：大標題 -->
+        <div class="page-title">
+            📜 公會成員列表
         </div>
     </div>
 

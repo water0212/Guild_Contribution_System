@@ -4,33 +4,26 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header("Location: index.php");
     exit();
 }
-// 引入資料庫連線
 require_once 'db_conn.php';
-// --- 2. 搜尋邏輯 (大幅升級) ---
 
-// 初始化搜尋變數 (為了讓 HTML 表單可以記住剛剛輸入的值)
+// --- 搜尋邏輯 ---
 $s_mission = isset($_GET['search_mission']) ? $_GET['search_mission'] : "";
-$s_member = isset($_GET['search_member']) ? $_GET['search_member'] : "";
+$s_name    = isset($_GET['search_name']) ? $_GET['search_name'] : "";
 
+$sql = "SELECT r.*, m.Name AS MemberName 
+        FROM contribution_record r
+        LEFT JOIN member m ON r.Member_Id = m.Member_Id 
+        WHERE 1=1";
 
-
-// ★ 技巧：使用 WHERE 1=1，後面可以無限串接 AND
-$sql = "SELECT * FROM contribution_record inner join member ON contribution_record.Member_Id = member.Member_Id WHERE 1=1";
-
-// 條件 A：如果有輸入任務名稱
 if (!empty($s_mission)) {
-    // 使用 real_escape_string 防止簡單的 SQL Injection
     $safe_mission = $conn->real_escape_string($s_mission);
-    $sql .= " AND Mission_type LIKE '%$safe_mission%'";
+    $sql .= " AND r.Mission_type LIKE '%$safe_mission%'";
 }
-
-// 條件 B：如果有輸入成員名稱
-if (!empty($s_member)) {
-    $safe_member = $conn->real_escape_string($s_member);
-    $sql .= " AND Name LIKE '%$safe_member%'";
+if (!empty($s_name)) {
+    $safe_name = $conn->real_escape_string($s_name);
+    $sql .= " AND m.Name LIKE '%$safe_name%'";
 }
-
-// 執行最終組裝好的 SQL
+$sql .= " ORDER BY r.record_id DESC";
 $result = $conn->query($sql);
 ?>
 
@@ -38,172 +31,113 @@ $result = $conn->query($sql);
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>貢獻任務紀錄表</title>
-    <!-- 引入 SweetAlert2 (雖然暫時不用，但先留著) -->
+    <title>貢獻紀錄列表</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入 SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* 簡單的 CSS 重現圖片風格 */
-        body {
-            font-family: "Microsoft JhengHei", Arial, sans-serif;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        
-        /* 上方黑色導覽列 */
-        .header {
-            background-color: #1a1a1a;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+        .header-bar {
+            background-color: #212529; /* 深黑背景 */
+            padding: 15px 0;           /* 上下留白 */
+            display: flex;             /* 啟用彈性盒模型 */
+            justify-content: center;   /* 關鍵：水平置中 */
+            align-items: center;       /* 垂直置中 */
+            gap: 15px;                 /* 按鈕之間的間距 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* 陰影 */
         }
 
-        .nav-buttons {
-            position: absolute;
-            left: 20px;
+        /* 左側按鈕群組 */
+        .nav-group {
             display: flex;
             gap: 10px;
         }
 
-        .nav-btn {
-            background-color: #5e4b8b;
-            color: white;
-            padding: 8px 15px;
+        /* 橢圓形按鈕 */
+        .custom-nav-btn {
+            background-color: #495057; /* 灰色底 */
+            color: #fff;
+            border: 1px solid #6c757d;
+            padding: 6px 18px;
+            border-radius: 50px; /* 橢圓形關鍵 */
             text-decoration: none;
-            border-radius: 20px;
             font-size: 14px;
-            border: none;
-            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        /* 統計區塊樣式 */
-        .stat-bar {
-            background: #fff3cd;
-            padding: 10px;
-            text-align: center;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 0.9em;
-        }
-
-        /* 搜尋區塊樣式 */
-        .search-bar {
-            background: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .search-bar input, .search-bar select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 5px;
-        }
-
-        /* 表格容器 */
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 20px auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-            padding: 20px;
-        }
-
-        /* 表格樣式 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th {
-            background-color: #3d3d3d; /* 深色表頭 */
+        .custom-nav-btn:hover {
+            background-color: #6c757d;
             color: white;
-            padding: 12px;
-            text-align: left;
+            transform: translateY(-2px);
         }
 
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+        /* 登出按鈕 (紅色) */
+        .btn-logout {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-logout:hover {
+            background-color: #bb2d3b;
+        }
+
+        /* 標題獨立置中 */
+        .page-title {
+            text-align: center;
+            margin-top: 25px;
+            margin-bottom: 10px;
             color: #333;
+            font-weight: bold;
+            font-size: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9; /* 斑馬紋 */
-        }
-
-        /* 按鈕樣式 */
-        .btn-edit { color: #5e4b8b; text-decoration: none; font-weight: bold; margin-right: 10px; }
-        .btn-delete { color: #d9534f; text-decoration: none; font-weight: bold; }
-        
-        .action-bar { margin-bottom: 15px; }
-        .add-btn {
-            display: inline-block;
-            border: 1px solid #ccc;
-            padding: 5px 15px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
 
-<!-- 導覽列 -->
-<div class="header">
-    <div class="nav-buttons">
-        <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
-        <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
-        <a href="member.php" class="nav-btn">👥 成員表</a>
-    </div>
-    <h2>公會名稱</h2>
-    <div class="nav-buttons" style="right: 20px; left: auto;">
-        <a href="logout.php" class="nav-btn">🚪 登出</a>
-    </div>
+<!-- 1. 頂部導覽列 (黑底) -->
+<div class="header-bar">
+    <a href="member.php" class="custom-nav-btn">👥 成員列表</a>
+    <a href="contribution_table.php" class="custom-nav-btn">📜 任務表</a>
+    <a href="logout.php" class="custom-nav-btn btn-logout">🚪 登出</a>
 </div>
 
-<!-- ★ 搜尋區塊 (新增點數搜尋) -->
-<div class="search-bar">
-    <form method="GET" action="">
-        <label>任務名稱：</label>
-        <input type="text" name="search_mission" placeholder="輸入關鍵字..." value="<?php echo htmlspecialchars($s_mission); ?>">
-        
-        <label style="margin-left: 15px;">成員：</label>
-        <input type="text" name="search_member" placeholder="輸入成員名稱" value="<?php echo htmlspecialchars($s_member); ?>" style="width: 150px;">
-        
-        <button type="submit" class="nav-btn">🔍 搜尋</button>
-        
-        <?php if(!empty($s_mission) || !empty($s_member)): ?>
-            <a href="contribution_circuit.php" style="margin-left: 10px; color: #666; text-decoration: underline;">清除搜尋</a>
-        <?php endif; ?>
-    </form>
+<!-- 2. 標題區塊 (獨立移到下面置中) -->
+<div class="page-title">
+    🛡️ 貢獻紀錄 (Circuit)
 </div>
 
 <div class="container">
-    <h3 style="text-align: center;">貢獻任務紀錄表</h3>
-    
-    <div class="action-bar">
-        <?php
-        if ($_SESSION['username'] <> "guest"){
-           echo '<a href="contribution_circuit_add.php" class="add-btn">＋ 新增</a>';
-        } 
-        ?>
+    <!-- 搜尋表單 -->
+    <form method="GET" class="row g-3 mb-4 p-3 bg-light rounded border">
+        <div class="col-md-4">
+            <input type="text" name="search_name" class="form-control" placeholder="搜尋成員姓名..." value="<?php echo htmlspecialchars($s_name); ?>">
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="search_mission" class="form-control" placeholder="搜尋任務類型..." value="<?php echo htmlspecialchars($s_mission); ?>">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">🔍 搜尋紀錄</button>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between mb-3">
+        <h4>紀錄明細</h4>
+        <a href="contribution_circuit_add.php" class="btn btn-success">+ 新增紀錄</a>
     </div>
 
-    <table>
-        <thead>
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
             <tr>
-                <th>紀錄編號 (record_id)</th>
-                <th>任務種類 (Mission_type)</th>
-                <th>完成成員 (Name)</th>
-                <th>點數 (point)</th>
+                <th>ID</th>
+                <th>成員姓名</th>
+                <th>執行任務</th>
+                <th>獲得點數</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -213,25 +147,45 @@ $result = $conn->query($sql);
                 while($row = $result->fetch_assoc()) {
                     echo "<tr>";
                     echo "<td>" . $row["record_id"] . "</td>";
-                    echo "<td>" . $row["Mission_type"] . "</td>";
-                    echo "<td>" . $row["Name"] . "</td>";
-                    echo "<td>" . $row["point"] . "</td>";
-                    echo "<td>";
-                    if($_SESSION['username'] <> "guest"){
-                        echo "<a href='contribution_circuit_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
-                        // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
-                        echo "<a href='contribution_circuit_delete.php?id=" . $row["record_id"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
-                    }
-                    echo "</td>";
+                    echo "<td>" . htmlspecialchars($row["MemberName"]) . "</td>";
+                    echo "<td><span class='badge bg-info text-dark'>" . htmlspecialchars($row["Mission_type"]) . "</span></td>";
+                    echo "<td class='fw-bold text-success'>+" . $row["point"] . "</td>";
+                    
+                    // 修改這裡：按鈕改成呼叫 JS 函數
+                    echo "<td>
+                            <a href='contribution_circuit_edit.php?id=" . $row["record_id"] . "' class='btn btn-sm btn-warning'>編輯</a>
+                            <button onclick='confirmDelete(" . $row["record_id"] . ")' class='btn btn-sm btn-danger'>刪除</button>
+                          </td>";
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='4' style='text-align:center; color: #888;'>查無資料</td></tr>";
+                echo "<tr><td colspan='5' class='text-center text-muted'>查無資料</td></tr>";
             }
             ?>
         </tbody>
     </table>
 </div>
+
+<script>
+    // SweetAlert2 刪除確認特效
+    function confirmDelete(id) {
+        Swal.fire({
+            title: '確定要刪除這筆紀錄嗎？',
+            text: "刪除後積分也會被扣除喔！",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: '是的，刪除！',
+            cancelButtonText: '取消'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 如果使用者按確定，導向刪除頁面
+                window.location.href = 'contribution_circuit_delete.php?id=' + id;
+            }
+        })
+    }
+</script>
 
 </body>
 </html>
