@@ -7,7 +7,7 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-$sql = "SELECT * FROM Member WHERE Member_Id = $id";
+$sql = "SELECT * FROM member WHERE Member_Id = $id";
 $result = $conn->query($sql);
 
 if ($result->num_rows === 0) {

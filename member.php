@@ -2,7 +2,7 @@
 require_once 'db_conn.php';
 
 // 2. 執行 SQL 查詢
-$sql = "SELECT * FROM Member";
+$sql = "SELECT * FROM member";
 $result = $conn->query($sql);
 ?>
 
@@ -34,7 +34,7 @@ $result = $conn->query($sql);
         <div class="card-body">
             <!-- 按鈕區 -->
             <div class="mb-3">
-                <a href="member_add.php" class="btn btn-success">+ 新增成員</a>
+                <a href="member_new.php" class="btn btn-success">+ 新增成員</a>
             </div>
 
             <!-- 表格區 -->
