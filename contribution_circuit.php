@@ -214,6 +214,7 @@ $result = $conn->query($sql);
     <table>
         <thead>
             <tr>
+                <th>紀錄編號 (record_id)</th>
                 <th>任務種類 (Mission_type)</th>
                 <th>完成成員 (Member_id)</th>
                 <th>點數 (point)</th>
@@ -225,13 +226,14 @@ $result = $conn->query($sql);
             if ($result && $result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
                     echo "<tr>";
+                    echo "<td>" . $row["record_id"] . "</td>";
                     echo "<td>" . $row["Mission_type"] . "</td>";
                     echo "<td>" . $row["Member_Id"] . "</td>";
                     echo "<td>" . $row["point"] . "</td>";
                     echo "<td>";
                     echo "<a href='contribution_circuit_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
                     // 這裡先保留原本的 onclick confirm，之後再改 SweetAlert
-                    echo "<a href='contribution_table_delete.php?id=" . $row["Mission_type"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
+                    echo "<a href='contribution_circuit_delete.php?id=" . $row["record_id"] . "' onclick='return confirm(\"確定要刪除嗎？\");' class='btn-delete'>刪除</a>";
                     echo "</td>";
                     echo "</tr>";
                 }
