@@ -15,16 +15,14 @@ $result = $conn->query($sql);
     <title>[首頁]公會成員列表</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body>
     <div class="header">
-        <div class="nav-buttons d-flex flex-wrap justify-content-center gap-2 mb-3">
-            <a href="contribution_circuit.php" class="nav-btn">≡ 貢獻紀錄</a>
+        <div class="nav-buttons">
+            <a href="#" class="nav-btn">≡ 貢獻紀錄</a>
             <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
             <a href="member.php" class="nav-btn">👥 成員表</a>
         </div>
-        <h1>🏰 首頁</h1>
-    </div>
-        
+        <h2>🏰 首頁</h2>
     </div>
 <div class="container mt-5">
     <div class="card shadow-sm">

@@ -168,7 +168,7 @@ $result = $conn->query($sql);
     <div class="nav-buttons">
         <a href="#" class="nav-btn">≡ 貢獻紀錄</a>
         <a href="contribution_table.php" class="nav-btn">≡ 貢獻任務表</a>
-        <a href="#" class="nav-btn">≡ 成員表</a>
+        <a href="member.php" class="nav-btn">👥 成員表</a>
     </div>
     <h2>公會名稱</h2>
 </div>
