@@ -19,7 +19,7 @@ $s_op   = isset($_GET['point_op']) ? $_GET['point_op'] : "=";
 $s_point= isset($_GET['search_point']) ? $_GET['search_point'] : "";
 
 // ★ 技巧：使用 WHERE 1=1，後面可以無限串接 AND
-$sql = "SELECT * FROM contribution_record WHERE 1=1";
+$sql = "SELECT * FROM contribution_record inner join member ON contribution_record.Member_Id = member.Member_Id WHERE 1=1";
 
 // 條件 A：如果有輸入名稱
 if (!empty($s_name)) {
@@ -216,7 +216,7 @@ $result = $conn->query($sql);
             <tr>
                 <th>紀錄編號 (record_id)</th>
                 <th>任務種類 (Mission_type)</th>
-                <th>完成成員 (Member_id)</th>
+                <th>完成成員 (Name)</th>
                 <th>點數 (point)</th>
                 <th>操作</th>
             </tr>
@@ -228,7 +228,7 @@ $result = $conn->query($sql);
                     echo "<tr>";
                     echo "<td>" . $row["record_id"] . "</td>";
                     echo "<td>" . $row["Mission_type"] . "</td>";
-                    echo "<td>" . $row["Member_Id"] . "</td>";
+                    echo "<td>" . $row["Name"] . "</td>";
                     echo "<td>" . $row["point"] . "</td>";
                     echo "<td>";
                     echo "<a href='contribution_circuit_edit.php?id=" . $row["Mission_type"] . "' class='btn-edit'>修改</a> ";
