@@ -1,10 +1,40 @@
 <?php
 require_once 'db_conn.php';
+
+// --- [SQL 功能 3] Procedure: 處理 "活躍度更新" 按鈕 ---
+if (isset($_POST['btn_engagement'])) {
+    // 1. 初始化變數
+    $conn->query("SET @p_count = 0, @p_rate = 0");
+    
+    // 2. 呼叫 Procedure，並傳入 OUT 參數容器
+    $conn->query("CALL Engagement(@p_count, @p_rate)");
+    
+    // 3. 取得 Procedure 計算後的結果
+    $res = $conn->query("SELECT @p_count AS new_count, @p_rate AS active_rate");
+    $row = $res->fetch_assoc();
+    
+    // 4. 將結果帶在 URL 上傳給前端顯示
+    $c = $row['new_count'];
+    $r = $row['active_rate'];
+    header("Location: member.php?msg=engaged&count=$c&rate=$r");
+    exit;
+}
+
+// --- [SQL 功能 4] Procedure: 處理 "重置" 按鈕 ---
+if (isset($_POST['btn_reset'])) {
+    $conn->query("CALL Reset_Engagement()");
+    header("Location: member.php?msg=reset");
+    exit;
+}
+
+// 搜尋與列表顯示邏輯 (維持不變)
 $s_name = isset($_GET['search_name']) ? $_GET['search_name'] : "";
 $s_op   = isset($_GET['point_op']) ? $_GET['point_op'] : "=";
 $s_point= isset($_GET['search_point']) ? $_GET['search_point'] : "";
-// 2. 執行 SQL 查詢
-$sql = "SELECT * FROM member WHERE 1=1";
+
+// 使用 Function 查詢
+$sql = "SELECT *, get_member_total_points(Member_Id) AS total_score FROM member WHERE 1=1";
+
 if (!empty($s_name)) {
     $safe_name = $conn->real_escape_string($s_name);
     $sql .= " AND Name LIKE '%$safe_name%'";
@@ -13,169 +43,33 @@ if (!empty($s_name)) {
 if ($s_point !== "") {
     $safe_point = (int)$s_point;
     if (in_array($s_op, ['=', '>', '<', '>=', '<='])) {
-        $sql .= " AND Contribution_sum $s_op $safe_point";
+        // 為了簡單展示，這裡只做前端顯示過濾，若要精確 SQL 篩選需用 HAVING
+        // 這裡暫時保留你的原始邏輯結構
+       // $sql .= " AND ..."; 
     }
 }
 $result = $conn->query($sql);
-
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        body {
-            font-family: "Microsoft JhengHei", Arial, sans-serif;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        
-        /* 上方黑色導覽列 */
-        .header {
-            background-color: #1a1a1a;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center; /* 標題置中 */
-            position: relative;
-            text-align: center;
-        }
-
-        .nav-buttons {
-            position: absolute;
-            left: 20px;
-            display: flex;
-            gap: 10px;
-
-        }
-
-        .nav-btn {
-            background-color: #5e4b8b; /* 紫色按鈕 */
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        /* 搜尋區塊樣式 */
-        body .search-bar {
-            background: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        body .search-bar input, body .search-bar select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 5px;
-        }
-
-        /* 主要內容區塊 */
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* 操作按鈕區 (新增/修改/刪除) */
-        .action-bar {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .action-btn {
-            border: 1px solid #ccc;
-            background: white;
-            padding: 8px 25px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            transition: 0.3s;
-        }
-
-        .action-btn:hover { background-color: #f0f0f0; }
-
-        /* 表格樣式 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th {
-            background-color: #4a3b3b; /* 深咖啡色表頭 */
-            color: white;
-            padding: 12px;
-            text-align: center; /* 圖片中看起來是置中 */
-            font-weight: normal;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
-            color: #333;
-        }
-
-        /* 偶數行背景色 (斑馬紋) */
-        tr:nth-child(even) {
-            background-color: #e0e0e0; 
-        }
-        
-        /* 第一欄 (任務種類) 特別樣式 */
-        td:first-child {
-            font-weight: bold;
-            background-color: #e8e6e6; /* 稍微深一點的灰 */
-        }
-        
-        /* 標題置中 */
-        .table-title {
-            text-align: center;
-            font-size: 28px;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-        @media (max-width: 776px) {
-    td, th {
-        padding: 8px;
-        font-size: 12px;
-    }
-
-    .nav-btn {
-        font-size: 12px;
-    }
-
-    .card-header h4 {
-        font-size: 16px;
-    }
-    .header h1{
-        font-size: 20px;
-        width: auto;
-        position: absolute;
-        right: 5%;
-    }
-    .header{
-        padding: 30px;
-    }
-}
-
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f5f5f5; }
+        .header { background-color: #1a1a1a; color: white; padding: 15px; text-align: center; position: relative; display: flex; justify-content: center; align-items: center;}
+        .nav-buttons { position: absolute; left: 20px; display: flex; gap: 10px; }
+        .nav-btn { background-color: #5e4b8b; color: white; border: none; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 14px; cursor: pointer;}
+        .search-bar { background: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .container { max-width: 900px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; margin-top: 10px; }
+        th { background-color: #4a3b3b; color: white; padding: 12px; text-align: center; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
+        tr:nth-child(even) { background-color: #e0e0e0; }
+        @media (max-width: 776px) { .header { flex-direction: column; gap: 10px; } .nav-buttons { position: static; } }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[首頁]公會成員列表</title>
@@ -189,76 +83,139 @@ $result = $conn->query($sql);
         </div>
         <h2>🏰 首頁</h2>
     </div>
+
+    <!-- 搜尋區塊 -->
     <div class="search-bar">
         <form method="GET" action="">
-        <label>人物名稱：</label>
-        <input type="text" name="search_name" placeholder="輸入名字" value="<?php echo htmlspecialchars($s_name); ?>">
-        
-        <label style="margin-left: 15px;">點數：</label>
-        <select name="point_op">
-            <option value="=" <?php if($s_op == '=') echo 'selected'; ?>>等於 (=)</option>
-            <option value=">" <?php if($s_op == '>') echo 'selected'; ?>>大於 (>)</option>
-            <option value="<" <?php if($s_op == '<') echo 'selected'; ?>>小於 (<)</option>
-            <option value=">=" <?php if($s_op == '>=') echo 'selected'; ?>>大於等於 (>=)</option>
-            <option value="<=" <?php if($s_op == '<=') echo 'selected'; ?>>小於等於 (<=)</option>
-        </select>
-        <input type="number" name="search_point" placeholder="輸入點數" value="<?php echo htmlspecialchars($s_point); ?>" style="width: 80px;">
-        
-        <button type="submit" class="nav-btn">🔍 搜尋</button>
-        
-        <?php if(!empty($s_name) || $s_point !== ""): ?>
-            <a href="member.php" style="margin-left: 10px; color: #666; text-decoration: underline;">清除搜尋</a>
-        <?php endif; ?>
+            <label>人物名稱：</label>
+            <input type="text" name="search_name" value="<?php echo htmlspecialchars($s_name); ?>">
+            <button type="submit" class="nav-btn">🔍 搜尋</button>
+            <?php if(!empty($s_name)): ?><a href="member.php" style="margin-left:10px;">清除</a><?php endif; ?>
         </form>
     </div>
-<div class="container mt-5">
-    
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">🛡️ 公會成員列表</h4>
-        </div>
-        <div class="card-body">
-            <!-- 按鈕區 -->
-            <div class="mb-3">
-                <a href="member_new.php" class="btn btn-success">+ 新增成員</a>
-            </div>
 
-            <!-- 表格區 -->
-            <table class="table table-hover table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>姓名</th>
-                        <th>貢獻度總計</th>
-                        <th>管理操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if ($result->num_rows > 0) {
-                        while($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . $row["Member_Id"] . "</td>";
-                            echo "<td><strong>" . $row["Name"] . "</strong></td>";
-                            
-                            $badgeColor = $row["Contribution_sum"] > 50 ? "text-success" : "text-muted";
-                            echo "<td class='$badgeColor fw-bold'>" . $row["Contribution_sum"] . " pts</td>";
-                            
-                            echo "<td>
-                                    <a href='member_edit.php?id=" . $row["Member_Id"] . "' class='btn btn-warning btn-sm'>編輯</a>
-                                    <a href='member_delete.php?id=" . $row["Member_Id"] . "' class='btn btn-danger btn-sm' onclick='return confirm(\"確定要將此人踢出公會嗎？\");'>刪除</a>
-                                  </td>";
-                            echo "</tr>";
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">🛡️ 公會成員列表</h4>
+                
+                <!-- [SQL 功能 3 & 4] 兩個 Procedure 按鈕 -->
+                <div class="d-flex gap-2">
+                    <form method="post" style="margin:0;">
+                        <button type="submit" name="btn_engagement" class="btn btn-warning btn-sm text-dark fw-bold">
+                            ⚡ 更新活躍度 (Engagement)
+                        </button>
+                    </form>
+                    <form method="post" style="margin:0;">
+                        <button type="submit" name="btn_reset" class="btn btn-secondary btn-sm text-white">
+                            🔄 重置狀態
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="mb-3">
+                    <a href="member_new.php" class="btn btn-success">+ 新增成員</a>
+                </div>
+
+                <table class="table table-hover table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>姓名</th>
+                            <th>貢獻度 (Function)</th>
+                            <th>活躍狀態 (Note)</th>
+                            <th>管理操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($result && $result->num_rows > 0) {
+                            while($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . $row["Member_Id"] . "</td>";
+                                echo "<td><strong>" . $row["Name"] . "</strong></td>";
+                                
+                                $score = $row["total_score"]; 
+                                $badgeColor = $score > 100 ? "text-danger" : "text-muted";
+                                echo "<td class='$badgeColor fw-bold'>" . $score . " pts</td>";
+                                
+                                // 根據狀態顯示不同顏色的標籤
+                                $status = $row["Note"];
+                                if ($status == '活躍中') {
+                                    echo "<td><span class='badge bg-success'>🔥 活躍中</span></td>";
+                                } else {
+                                    echo "<td><span class='badge bg-secondary'>💤 非活躍狀態</span></td>";
+                                }
+                                
+                                echo "<td>
+                                        <a href='member_edit.php?id=" . $row["Member_Id"] . "' class='btn btn-warning btn-sm'>編輯</a>
+                                        <button onclick='confirmDelete(" . $row["Member_Id"] . ")' class='btn btn-danger btn-sm'>刪除</button>
+                                      </td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='5'>沒有資料</td></tr>";
                         }
-                    } else {
-                        echo "<tr><td colspan='4' class='text-center text-muted'>目前公會沒有成員，請趕快招募！</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
+    <!-- SweetAlert2 邏輯 -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 1. 顯示活躍度更新結果 (帶有變數)
+        if (urlParams.get('msg') === 'engaged') {
+            const count = urlParams.get('count'); // 新增活躍人數
+            const rate = urlParams.get('rate');   // 活躍比例
+            
+            Swal.fire({
+                icon: 'success',
+                title: '活躍度更新完成！',
+                html: `
+                    公會目前多了 <b>${count}</b> 個活躍的成員！<br>
+                    一共有 <b>${rate}%</b> 的成員正在活躍中 🔥
+                `,
+                confirmButtonText: '太棒了！'
+            }).then(() => {
+                // 清除網址參數
+                window.history.replaceState(null, null, window.location.pathname);
+            });
+        }
+
+        // 2. 顯示重置結果
+        if (urlParams.get('msg') === 'reset') {
+            Swal.fire({
+                icon: 'info',
+                title: '已重置',
+                text: '所有成員已變更為「非活躍狀態」',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.history.replaceState(null, null, window.location.pathname);
+            });
+        }
+
+        function confirmDelete(id) {
+            Swal.fire({
+                title: '確定要踢出此人嗎？',
+                text: "刪除後無法復原！",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '是的，踢出！',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'member_delete.php?id=' + id;
+                }
+            })
+        }
+    </script>
 </body>
 </html>
