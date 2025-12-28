@@ -190,7 +190,11 @@ $result = $conn->query($sql);
     <h3 style="text-align: center;">貢獻任務紀錄表</h3>
     
     <div class="action-bar">
-        <a href="contribution_circuit_add.php" class="add-btn">＋ 新增</a>
+        <?php
+        if ($_SESSION['username'] <> "guest"){
+           echo '<a href="contribution_circuit_add.php" class="add-btn">＋ 新增</a>';
+        } 
+        ?>
     </div>
 
     <table>

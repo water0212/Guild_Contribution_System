@@ -215,7 +215,11 @@ $result = $conn->query($sql);
     <h3 style="text-align: center;">可完成的貢獻任務表</h3>
     
     <div class="action-bar">
-        <a href="contribution_table_add.php" class="add-btn">＋ 新增</a>
+            <?php
+        if ($_SESSION['username'] <> "guest"){
+           echo '<a href="contribution_table_add.php" class="add-btn">＋ 新增</a>';
+        } 
+        ?>
     </div>
 
     <table>
