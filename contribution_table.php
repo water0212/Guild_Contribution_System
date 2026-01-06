@@ -9,13 +9,15 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
 // --- 1. 統計區塊 (為了畫圖表，我們多撈一點資料) ---
 // 計算各個等級的任務數量
-$chart_sql = "SELECT Mission_type, COUNT(*) as count FROM contribution_table GROUP BY Mission_type";
+$chart_sql = "SELECT Mission_type, COUNT(*) as count, point FROM contribution_table GROUP BY Mission_type, point";
 $chart_res = $conn->query($chart_sql);
 $labels = [];
 $data = [];
+$p=[];
 while($row = $chart_res->fetch_assoc()) {
     $labels[] = $row['Mission_type']; // 例如: S級任務
     $data[] = $row['count'];          // 例如: 5
+    $p[] = $row['point'];
 }
 
 // 原本的總分統計
@@ -144,8 +146,8 @@ $result = $conn->query($sql);
         <table id="missionTable" class="table table-hover table-striped" style="width:100%">
             <thead class="table-dark">
                 <tr>
-                    <th>ID</th>
                     <th>任務類型</th>
+                    <th>任務敘述</th>
                     <th>獲得積分</th>
                     <th>操作</th>
                 </tr>
@@ -163,7 +165,7 @@ $result = $conn->query($sql);
                         elseif(strpos($row["Mission_type"], 'A') !== false) $badge = "bg-warning text-dark";
                         elseif(strpos($row["Mission_type"], 'B') !== false) $badge = "bg-primary";
                         
-                        echo "<td><span class='badge $badge'>" . $row["Mission_type"] . "</span></td>";
+                        echo "<td><span class='badge $badge'>" . $row["Text"] . "</span></td>";
                         echo "<td class='fw-bold text-success'>" . $row["point"] . " pts</td>";
                         if($_SESSION["username"]<>'guest'){
                               echo "<td>
@@ -202,7 +204,7 @@ $result = $conn->query($sql);
         data: {
             labels: <?php echo json_encode($labels); ?>, // PHP 陣列轉 JS
             datasets: [{
-                data: <?php echo json_encode($data); ?>,
+                data: <?php echo json_encode($p); ?>,
                 backgroundColor: [
                     '#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff'
                 ],

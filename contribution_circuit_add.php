@@ -16,8 +16,6 @@ $members_result = $conn->query($members_sql);
 // B. 撈取所有任務種類 (為了下拉選單)
 $missions_sql = "SELECT * FROM contribution_table";
 $missions_result = $conn->query($missions_sql);
-
-
 // --- 2. 處理表單送出 ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mission_type = $_POST['Mission_type'];
@@ -26,11 +24,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         // ★ 步驟 A：根據使用者選的任務，去查對應的點數 (point)
         $point_sql = "SELECT point FROM contribution_table WHERE Mission_type = ?";
+        //$missions_show_sql = "SELECT * FROM contribution_record WHERE Member_Id = ?";//
         $stmt_pt = $conn->prepare($point_sql);
         $stmt_pt->bind_param("s", $mission_type);
         $stmt_pt->execute();
+        //$stmt_missions_show = $conn->prepare($missions_show_sql);//
+        //$stmt_missions_show->bind_param("s", $member_id);//
+        //$stmt_missions_show->execute();//
+        //$stmt_missions_show_result = $stmt_missions_show->get_result()->fetch_row()[2];
+        //$stmt_missions_show_result_result = "SELECT * FROM stmt_missions_show_result, contribution_record WHERE stmt_missions_show_result.Mission_type <> contribution_record.Mission_type";
         $result_pt = $stmt_pt->get_result();
-        
         if ($row_pt = $result_pt->fetch_assoc()) {
             $auto_point = $row_pt['point']; // 抓到了！這是系統設定的標準點數
         } else {
